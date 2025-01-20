@@ -9,7 +9,6 @@ const server = http.createServer((req, res) => {
   res.end('Hello, World!\n');
 });
 const io = socketIo(server);
-
 const PORT = 80;//process.env.PORT;// || 3001;
 
 app.use(express.static('public')); // Раздача статических файлов из папки public
