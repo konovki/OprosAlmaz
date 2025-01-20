@@ -1,9 +1,10 @@
 const app = require('express')();
+const express = require('express');
 const http = require('http').createServer(app);
 const cors = require('cors');
 const io = require('socket.io')(http);
 const PORT = 8080;
-app.use(app.static('public'));
+app.use(express.static('public'));
 
 let currentQuestion = '';
 
