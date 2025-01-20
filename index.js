@@ -1,9 +1,13 @@
-const express = require('express');
 const http = require('http');
-const socketIo = require('socket.io');
 
-const app = express();
-const server = http.createServer(app);
+const hostname = '195.133.196.45';
+const port = 80;
+
+const server = http.createServer((req, res) => {
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/plain');
+  res.end('Hello, World!\n');
+});
 const io = socketIo(server);
 
 const PORT = 80;//process.env.PORT;// || 3001;
