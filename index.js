@@ -1,13 +1,12 @@
 const express = require('express');
 const http = require('http');
-
-const hostname = '195.133.196.45';
-const port = 80;
 const socketIo = require('socket.io');
+
 const app = express();
-const server = http.createServer();
+const server = http.createServer(app);
 const io = socketIo(server);
-const PORT = 80;//process.env.PORT;// || 3001;
+
+const PORT = 80;
 
 app.use(express.static('public')); // Раздача статических файлов из папки public
 
