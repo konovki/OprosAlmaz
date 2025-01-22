@@ -5,89 +5,177 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Пользовательская панель</title>
     <style>
-        body { font-family: Arial, sans-serif; }
-        .answer { margin: 10px 0; }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #4a4e69;
+        }
+
+        .container {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+        }
+
+        label {
+            font-size: 16px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #4a4e69;
+            outline: none;
+        }
+
+        button {
+            background-color: #5a67d8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #434190;
+        }
+
+        .question-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .answers {
+            margin-top: 15px;
+        }
+
+        .answer {
+            background-color: #e2e8f0;
+            color: #333;
+            border: none;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 5px 0;
+            cursor: pointer;
+            display: block;
+            transition: background-color 0.3s;
+        }
+
+        .answer:hover {
+            background-color: #d6d6d6;
+        }
     </style>
 </head>
 <body>
-<h1>Пользовательская панель</h1>
-<div>
-    <label for="username">Введите ваше имя:</label>
-    <input type="text" id="username" />
-    <button onclick="startSurvey()">Начать опрос</button>
-</div>
-<div class="question-container" style="display:none;">
-    <h2 id="question"></h2>
-    <div class="answers" id="answersContainer"></div>
+<div class="container">
+    <h1>Пользовательская панель</h1>
+    <div id="usernameContainer">
+        <label for="username">Введите ваше имя:</label>
+        <input type="text" id="username" />
+        <button onclick="startSurvey()">Начать опрос</button>
+    </div>
+    <div class="question-container" id="questionContainer">
+        <h2 id="question"></h2>
+        <div class="answers" id="answersContainer"></div>
+    </div>
 </div>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-   
-        let answersArray;
-        let UserAnswersArray = [];
-        let QuestionIndex = 0;
-        let currentQuestionText = '';
-        
-        const socket = io();
-        // answersArray = ['101', '2', '3', '4'];
-        console.log("start");
-        let answers = [' 1', 'Ответ 2', 'Ответ 3', 'Ответ 4'];
-        function startSurvey() {
-            const username = document.getElementById('username').value;
-            if (username) {
-                localStorage.setItem('username', username);
-                displayQuestion();
-                document.querySelector('.question-container').style.display = 'block';
-            } else {
-                alert('Пожалуйста, введите ваше имя.');
-            }
+    let answersArray;
+    let UserAnswersArray = [];
+    let QuestionIndex = 0;
+    let currentQuestionText = '';
+    console.log(localStorage.getItem('username'),'-usernaemmm');
+    const socket = io();
+    if (localStorage.getItem('username')){
+        // document.getElementById('usernameContainer').style.display = 'none';
+        // displayQuestion();
+        console.log('IF')
+        document.getElementById('usernameContainer').style.display = 'none';
+        document.querySelector('.question-container').style.display = 'block';
+    }
+    function startSurvey() {
+        const usernameInput = document.getElementById('username');
+        const username = usernameInput.value;
+        if (username) {
+            localStorage.setItem('username', username);
+            usernameInput.value = ''; // Очистить поле ввода
+            document.getElementById('usernameContainer').style.display = 'none'; // Скрыть контейнер с вводом имени
+            displayQuestion();
+            document.querySelector('.question-container').style.display = 'block';
+        } else {
+            alert('Пожалуйста, введите ваше имя.');
         }
-        //work
-        function displayQuestion() {
-            const questionText = localStorage.getItem('currentQuestion');
-            console.log('currentQuestionText',currentQuestionText)
-            if (currentQuestionText !== undefined) {
-                document.getElementById('question').innerText = currentQuestionText;
-                updateAnswers();
-            } else {
-                document.getElementById('question').innerText = "Ожидание вопроса от администратора...";
-            }
+    }
+
+    function displayQuestion() {
+        const questionText = localStorage.getItem('currentQuestion');
+        if (currentQuestionText !== undefined) {
+            document.getElementById('question').innerText = currentQuestionText;
+            updateAnswers();
+        } else {
+            document.getElementById('question').innerText = "Ожидание вопроса от администратора...";
         }
-        //work
-        function updateAnswers() {
-            const answersContainer = document.getElementById('answersContainer');
-            answersContainer.innerHTML = ''; // Очистить предыдущие ответы
-            answersArray.forEach(answer => {
-                const btn = document.createElement('button');
-                btn.innerText = answer;
-                btn.classList.add('answer');
-                btn.onclick = () => submitAnswer(answer);
-                answersContainer.appendChild(btn);
-            });
+    }
 
-        }
-
-        function submitAnswer(answer) {
-            // if (UserAnserIndex > -1){UserAnswersArray[UserAnserIndex] = answer}
-            console.log('UserAnswersArray',UserAnswersArray);
-            console.log('answer',answer);
-
-            alert('Ваш ответ отправлен: ' + answer);
-            // updateAnswers(localStorage.getItem('currentQuestion'));  // Обновить для следующего вопроса
-            const UserAnswerPackage = [username.value,QuestionIndex,answer];
-            socket.emit('UserAnswerPackage',UserAnswerPackage);
-        }
-
-
-        //work // Get quuestion from Server
-        socket.on('question', (question) => {
-            console.log('question',question);
-            currentQuestionText = question[0]
-            answersArray = question[1];
-            QuestionIndex = question[2];
-            displayQuestion(); // Обновляем отображение вопроса
+    function updateAnswers() {
+        const answersContainer = document.getElementById('answersContainer');
+        answersContainer.innerHTML = ''; // Очистить предыдущие ответы
+        answersArray.forEach(answer => {
+            const btn = document.createElement('button');
+            btn.innerText = answer;
+            btn.classList.add('answer');
+            btn.onclick = () => submitAnswer(answer);
+            answersContainer.appendChild(btn);
         });
+    }
 
-    </script>
+    function submitAnswer(answer) {
+        console.log('UserAnswersArray', UserAnswersArray);
+        console.log('answer', answer);
+
+        // alert('Ваш ответ отправлен: ' + answer);
+        const UserAnswerPackage = [localStorage.getItem('username'), QuestionIndex, answer];
+        socket.emit('UserAnswerPackage', UserAnswerPackage);
+    }
+
+    socket.on('question', (question) => {
+        console.log('question', question);
+        currentQuestionText = question[0];
+        answersArray = question[1];
+        QuestionIndex = question[2];
+        displayQuestion();
+    });
+    socket.on('ClearLocalStorageSignal',(question) => {
+        console.log('here');
+       localStorage.clear();
+       console.log('local storage cleared');
+    });
+</script>
 </body>
 </html>

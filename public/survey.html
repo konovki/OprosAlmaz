@@ -3,86 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Пользовательская панель</title>
-    <style>
-        body { font-family: Arial, sans-serif; }
-        .answer { margin: 10px 0; }
-    </style>
+    <title>Ответы пользователей</title>
 </head>
 <body>
-<h1>Пользовательская панель</h1>
-<div>
-    <label for="username">Введите ваше имя:</label>
-    <input type="text" id="username" />
-    <button onclick="startSurvey()">Начать опрос</button>
-</div>
-<div class="question-container" style="display:none;">
-    <h2 id="question"></h2>
-    <div class="answers" id="answersContainer"></div>
-</div>
+    <h1>Ответы пользователей</h1>
+    <ul id="answers-list"></ul>
 
-<script>
-        const channel = new BroadcastChannel('question_channel');
-        let answersArray;
-        let UserAnswersArray = [];
-        let UserAnserIndex = -1;
-        answersArray = ['1', '2', '3', '4'];
-        console.log("start");
-        let answers = [' 1', 'Ответ 2', 'Ответ 3', 'Ответ 4'];
-        function startSurvey() {
-            const username = document.getElementById('username').value;
-            if (username) {
-                localStorage.setItem('username', username);
-                displayQuestion();
-                document.querySelector('.question-container').style.display = 'block';
-            } else {
-                alert('Пожалуйста, введите ваше имя.');
-            }
-        }
-        function displayQuestion() {
-            const questionText = localStorage.getItem('currentQuestion');
-            if (questionText) {
-                document.getElementById('question').innerText = questionText;
-                updateAnswers(questionText);
-            } else {
-                document.getElementById('question').innerText = "Ожидание вопроса от администратора...";
-            }
-        }
+    <script>
+        // Шаг 2: JavaScript
+        const answers = {'user1': 1, 'user2': 2, 'user3': 3};
 
-        function updateAnswers(question) {
-            const answersContainer = document.getElementById('answersContainer');
-            answersContainer.innerHTML = ''; // Очистить предыдущие ответы
-            answersArray.forEach(answer => {
-                const btn = document.createElement('button');
-                btn.innerText = answer;
-                btn.classList.add('answer');
-                btn.onclick = () => submitAnswer(answer);
-                answersContainer.appendChild(btn);
-            });
+        // Получаем элемент списка
+        const answersList = document.getElementById('answers-list');
 
-        }
+        // Преобразуем объект в массив пар [имя пользователя, количество ответов]
+        const sortedAnswers = Object.entries(answers).sort((a, b) => b[1] - a[1]);
 
-        function submitAnswer(answer) {
-            console.log(answer);
-            if (UserAnserIndex > -1){UserAnswersArray[UserAnserIndex] = answer}
-            console.log('UserAnswersArray',UserAnswersArray);
-            localStorage.setItem('userAnswer', [username.value,UserAnswersArray]);
-<!--            alert('Ваш ответ отправлен: ' + answer);-->
-            updateAnswers(localStorage.getItem('currentQuestion'));  // Обновить для следующего вопроса
-        }
-
-        // Получаем новые сообщения из канала
-        channel.onmessage = function(event) {
-            console.log(event.data[0]);
-            console.log(event.data[1]);
-            console.log(event.data[2]);
-            UserAnserIndex = event.data[2];
-            localStorage.setItem('currentQuestion', event.data[0]); // Обновляем текущий вопрос из сообщения
-            answersArray = event.data[1];
-            displayQuestion(); // Обновляем отображение вопроса
-        };
-
-        displayQuestion();
+        // Проходим по отсортированному массиву и добавляем элементы списка
+        sortedAnswers.forEach(([user, answerCount]) => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${user}: ${answerCount} ответ(а/ов)`;
+            answersList.appendChild(listItem);
+        });
     </script>
 </body>
 </html>

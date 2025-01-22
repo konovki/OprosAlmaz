@@ -29,6 +29,9 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log('Пользователь отключился');
     });
+    socket.on('ClearLocalStorageSignal',(a)=>{
+        io.emit('ClearLocalStorageSignal',1);
+    })
 });
 
 http.listen(PORT, () => {

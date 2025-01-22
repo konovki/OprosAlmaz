@@ -109,6 +109,7 @@
         <h1>Админ панель</h1>
         <div>
             <select id="questionSelect"></select>
+            <button id="ClearLocalStorageButton">Clear Local Storage</button>
             <button id="submitQuestion">Задать вопрос пользователю</button>
         </div>
         <div class="question">
@@ -120,6 +121,8 @@
         </div>
         <div class="container" id="matrix"></div>
     </div>
+    <h1>Ответы пользователей</h1>
+    <ul id="answers-list"></ul>
     <script src="/socket.io/socket.io.js"></script>
     <script>
         // Outer Parametres
@@ -143,7 +146,8 @@
         const socket = io();
         let QuestionIndex = 0;
         let UserAnswersArray = {};
-        let UsersResult = {};
+        // let UsersResult = {};
+        // let UserCorrectResult = {};
         const matrixContainer = document.getElementById('matrix');
         updateSelect(questions);
         // Interface Functions
@@ -168,12 +172,12 @@
                 answersContainer.appendChild(btn);
             });
         }
-        function CreateHeader(name){
-            const header = document.createElement('div');
-            header.textContent = name;
-            header.className = 'header';
-            matrixContainer.appendChild(header);
-                }
+        // function CreateHeader(name){
+        //     const header = document.createElement('div');
+        //     header.textContent = name;
+        //     header.className = 'header';
+        //     matrixContainer.appendChild(header);
+        //         }
         document.getElementById('submitQuestion').onclick = function() {
             const Question = document.getElementById('questionSelect');
             QuestionIndex = Question.value;
@@ -182,16 +186,58 @@
             document.getElementById('currentQuestion').innerText = questions[QuestionIndex];
             updateAnswers();
         };
+        document.getElementById('ClearLocalStorageButton').onclick = function(){
+            socket.emit('ClearLocalStorageSignal',0);
+        }
         //Get Answer from user
         function checkUserResult(user,questionIndex,answer){
-            if (!(user in UsersResult)){
+            UsersResult = JSON.parse(localStorage.getItem('UsersResult'));
+            UserCorrectResult = JSON.parse(localStorage.getItem('UserCorrectResult'));
+            if (UsersResult == null){
+                UsersResult = {};
+                UserCorrectResult = {};
                 UsersResult[user] = new Array(NumberOfQuestions).fill(0);
-                CreateHeader(user);    
+                UserCorrectResult[user] = 0;
             }
+            else {
+                if (!(user in UsersResult)){
+                    UsersResult[user] = new Array(NumberOfQuestions).fill(0);
+                    UserCorrectResult[user] = 0;
+                // CreateHeader(user);    
+                    }
+                }
+
             if (UserAnswersArray[user][questionIndex] == CorrectAnswers[questionIndex]){
                 UsersResult[user][questionIndex] = 1;
                     }
             else {UsersResult[user][questionIndex] = 0;}
+                      
+            for (const user in UsersResult) {
+                UserCorrectResult[user] = UsersResult[user].reduce((sum, current) => sum + current, 0);
+            }
+
+            console.log('UserCorrectResult',UserCorrectResult);
+
+            localStorage.setItem('UsersResult', JSON.stringify(UsersResult));
+            localStorage.setItem('UserCorrectResult', JSON.stringify(UserCorrectResult));
+            
+            if (Object.keys(UserCorrectResult).length > 0){
+                DrowUserCorrectResult();
+            }
+        }
+        function DrowUserCorrectResult(){
+            UserCorrectResult = JSON.parse(localStorage.getItem('UserCorrectResult'));
+            console.log('Drow UserCorrectResult',UserCorrectResult);
+
+            const answersList = document.getElementById('answers-list');
+            answersList.textContent = '';
+            const sortedAnswers = Object.entries(UserCorrectResult).sort((a, b) => b[1] - a[1]);
+            console.log('sortedAnswers',sortedAnswers)
+            sortedAnswers.forEach(([user, answerCount]) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${user}: ${answerCount} ответ(а/ов)`;
+                answersList.appendChild(listItem);
+        });
         }
         function checkUserinAnswersList(user,answerIndex,answer){
             if (!(user in UserAnswersArray)){UserAnswersArray[user] = new Array(NumberOfQuestions).fill(undefined);}
