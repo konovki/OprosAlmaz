@@ -2,6 +2,7 @@ const app = require('express')();
 const express = require('express');
 const http = require('http').createServer(app);
 const cors = require('cors');
+const { console } = require('inspector');
 const io = require('socket.io')(http);
 const PORT = 8080;
 // hi 
@@ -9,6 +10,7 @@ const PORT = 8080;
 app.use(express.static('public'));
 
 let currentQuestion = '';
+
 
 io.on('connection', (socket) => {
     console.log('Новый пользователь подключен');
